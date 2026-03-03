@@ -18,6 +18,7 @@ from .const import (
     DISPATCH_CONTROLLER_RECONNECTED,
     DISPATCH_CONTROLLER_UPDATE,
     DISPATCH_ZONE_UPDATE,
+    REQUEST_TIMEOUT,
     STATIC_RECONNECT_INTERVAL,
     TIMEOUT_CONNECT,
 )
@@ -152,6 +153,11 @@ async def async_start_discovery_service(hass: HomeAssistant):
         # Already started
         return disco
     _LOGGER.debug("Starting iZone Discovery Service")
+
+    # Increase the pizone library's HTTP request timeout.
+    # The default 3 seconds is too aggressive for iZone controllers
+    # that may be slow to respond during HVAC operations.
+    pizone.Controller.REQUEST_TIMEOUT = REQUEST_TIMEOUT
 
     # discovery local services
     disco = DiscoveryService(hass)
