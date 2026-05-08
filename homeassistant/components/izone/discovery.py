@@ -140,6 +140,12 @@ class DiscoveryService(pizone.Listener):
             timedelta(seconds=STATIC_RECONNECT_INTERVAL),
         )
 
+    def remove_static_host(self, device_uid: str) -> None:
+        """Remove a static-IP controller and stop keepalive if empty."""
+        self._static_hosts.pop(device_uid, None)
+        if not self._static_hosts:
+            self.stop_keepalive()
+
     def stop_keepalive(self) -> None:
         """Stop the periodic keepalive."""
         if self._keepalive_unsub is not None:

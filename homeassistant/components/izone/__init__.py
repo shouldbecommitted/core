@@ -15,7 +15,7 @@ from homeassistant.exceptions import ConfigEntryNotReady
 from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers.typing import ConfigType
 
-from .const import DATA_CONFIG, IZONE
+from .const import DATA_CONFIG, DATA_DISCOVERY_SERVICE, IZONE
 from .discovery import (
     async_add_controller_by_ip,
     async_start_discovery_service,
@@ -81,4 +81,14 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Unload a config entry."""
-    return await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
+    result = await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
+
+    if not result:
+        return result
+
+    if (disco := hass.data.get(DATA_DISCOVERY_SERVICE)) and entry.data.get(
+        CONF_HOST
+    ):
+        disco.remove_static_host(entry.unique_id)
+
+    return result
